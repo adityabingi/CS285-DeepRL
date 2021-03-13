@@ -4,6 +4,7 @@ import time
 
 import gym
 import torch
+import pickle
 
 from cs285.infrastructure import pytorch_util as ptu
 from cs285.infrastructure.logger import Logger
@@ -11,7 +12,7 @@ from cs285.infrastructure import utils
 
 # how many rollouts to save as videos to tensorboard
 MAX_NVIDEO = 2
-MAX_VIDEO_LEN = 40  # we overwrite this in the code below
+MAX_VIDEO_LEN = 200  # we overwrite this in the code below
 
 
 class RL_Trainer(object):
@@ -166,7 +167,13 @@ class RL_Trainer(object):
         # HINT1: use sample_trajectories from utils
         # HINT2: you want each of these collected rollouts to be of length self.params['ep_len']
         print("\nCollecting data to be used for training...")
-        paths, envsteps_this_batch = TODO
+
+        if itr == 0:
+            with open(load_initial_expertdata, 'rb') as f:
+                paths = pickle.load(f)
+            envsteps_this_batch = 0
+        else:
+            paths, envsteps_this_batch = utils.sample_trajectories(self.env, collect_policy, batch_size, self.params['ep_len'])
 
         # collect more rollouts with the same policy, to be saved as videos in tensorboard
         # note: here, we collect MAX_NVIDEO rollouts, each of length MAX_VIDEO_LEN
@@ -187,12 +194,12 @@ class RL_Trainer(object):
             # TODO sample some data from the data buffer
             # HINT1: use the agent's sample function
             # HINT2: how much data = self.params['train_batch_size']
-            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = TODO
+            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = self.agent.sample(self.params['train_batch_size'])
 
             # TODO use the sampled data to train an agent
             # HINT: use the agent's train function
             # HINT: keep the agent's training log for debugging
-            train_log = TODO
+            train_log = self.agent.train(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
             all_logs.append(train_log)
         return all_logs
 
@@ -202,6 +209,9 @@ class RL_Trainer(object):
         # TODO relabel collected obsevations (from our policy) with labels from an expert policy
         # HINT: query the policy (using the get_action function) with paths[i]["observation"]
         # and replace paths[i]["action"] with these expert labels
+
+        for path in paths:
+            path['action'] = expert_policy.get_action(path['observation'])
 
         return paths
 
@@ -222,9 +232,9 @@ class RL_Trainer(object):
             #save train/eval videos
             print('\nSaving train rollouts as videos...')
             self.logger.log_paths_as_videos(train_video_paths, itr, fps=self.fps, max_videos_to_save=MAX_NVIDEO,
-                                            video_title='train_rollouts')
+                                            video_title= f'train_rollouts_{itr}')
             self.logger.log_paths_as_videos(eval_video_paths, itr, fps=self.fps,max_videos_to_save=MAX_NVIDEO,
-                                             video_title='eval_rollouts')
+                                             video_title=f'eval_rollouts_{itr}')
 
         # save eval metrics
         if self.log_metrics:
@@ -244,11 +254,26 @@ class RL_Trainer(object):
             logs["Eval_MinReturn"] = np.min(eval_returns)
             logs["Eval_AverageEpLen"] = np.mean(eval_ep_lens)
 
-            logs["Train_AverageReturn"] = np.mean(train_returns)
-            logs["Train_StdReturn"] = np.std(train_returns)
-            logs["Train_MaxReturn"] = np.max(train_returns)
-            logs["Train_MinReturn"] = np.min(train_returns)
-            logs["Train_AverageEpLen"] = np.mean(train_ep_lens)
+            logs["Train_MeanReturn"] = 0 if itr==0 else np.mean(train_returns)
+            logs["Train_StdReturn"]  = 0 if itr==0 else np.std(train_returns)
+            logs["Train_MaxReturn"]  = 0 if itr==0 else np.max(train_returns)
+            logs["Train_MinReturn"]  = 0 if itr==0 else np.min(train_returns)
+            logs["Train_AverageEpLen"] = 0 if itr==0 else np.mean(train_ep_lens)
+
+            """if itr == 0:
+                self.expert_mean_return = np.mean(train_returns)
+                self.expert_std_return = np.std(train_returns)
+                self.expert_max_return = np.max(train_returns)
+                self.expert_min_return = np.min(train_returns)
+                self.expert_average_eplen = np.mean(train_ep_lens)
+                self.expert_total_timesteps = np.sum(train_ep_lens)
+
+            logs["Expert_MeanReturn"] = self.expert_mean_return
+            logs["Expert_StdReturn"] = self.expert_std_return
+            logs["Expert_MaxReturn"] = self.expert_max_return
+            logs["Expert_MinReturn"] = self.expert_min_return
+            logs["Expert_AverageEpLen"] = self.expert_average_eplen
+            logs["Expert_TotalTimesteps"] = self.expert_total_timesteps"""
 
             logs["Train_EnvstepsSoFar"] = self.total_envsteps
             logs["TimeSinceStart"] = time.time() - self.start_time

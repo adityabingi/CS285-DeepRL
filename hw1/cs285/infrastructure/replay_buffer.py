@@ -18,7 +18,7 @@ class ReplayBuffer(object):
         self.terminals = None
 
     def __len__(self):
-        if self.obs:
+        if self.obs.any():
             return self.obs.shape[0]
         else:
             return 0
@@ -77,7 +77,13 @@ class ReplayBuffer(object):
         ## HINT 2: return corresponding data points from each array (i.e., not different indices from each array)
         ## HINT 3: look at the sample_recent_data function below
 
-        return TODO, TODO, TODO, TODO, TODO
+        indices = np.random.permutation(len(self))[:batch_size]
+
+        return (self.obs[indices],
+                self.acs[indices], 
+                self.rews[indices], 
+                self.next_obs[indices], 
+                self.terminals[indices])
 
     def sample_recent_data(self, batch_size=1):
         return (
