@@ -108,6 +108,7 @@ class RL_Trainer(object):
                 itr,
                 initial_expertdata,
                 collect_policy,
+                expert_policy,
                 self.params['batch_size']
             )  # HW1: implement this function below
             paths, envsteps_this_batch, train_video_paths = training_returns
@@ -143,6 +144,7 @@ class RL_Trainer(object):
             itr,
             load_initial_expertdata,
             collect_policy,
+            expert_policy,
             batch_size,
     ):
         """
@@ -171,6 +173,7 @@ class RL_Trainer(object):
         if itr == 0:
             with open(load_initial_expertdata, 'rb') as f:
                 paths = pickle.load(f)
+            #paths, envsteps_this_batch = utils.sample_trajectories(self.env, expert_policy, 2000, self.params['ep_len'])
             envsteps_this_batch = 0
         else:
             paths, envsteps_this_batch = utils.sample_trajectories(self.env, collect_policy, batch_size, self.params['ep_len'])
@@ -248,7 +251,7 @@ class RL_Trainer(object):
 
             # decide what to log
             logs = OrderedDict()
-            logs["Eval_AverageReturn"] = np.mean(eval_returns)
+            logs["Eval_MeanReturn"] = np.mean(eval_returns)
             logs["Eval_StdReturn"] = np.std(eval_returns)
             logs["Eval_MaxReturn"] = np.max(eval_returns)
             logs["Eval_MinReturn"] = np.min(eval_returns)
@@ -260,21 +263,6 @@ class RL_Trainer(object):
             logs["Train_MinReturn"]  = 0 if itr==0 else np.min(train_returns)
             logs["Train_AverageEpLen"] = 0 if itr==0 else np.mean(train_ep_lens)
 
-            """if itr == 0:
-                self.expert_mean_return = np.mean(train_returns)
-                self.expert_std_return = np.std(train_returns)
-                self.expert_max_return = np.max(train_returns)
-                self.expert_min_return = np.min(train_returns)
-                self.expert_average_eplen = np.mean(train_ep_lens)
-                self.expert_total_timesteps = np.sum(train_ep_lens)
-
-            logs["Expert_MeanReturn"] = self.expert_mean_return
-            logs["Expert_StdReturn"] = self.expert_std_return
-            logs["Expert_MaxReturn"] = self.expert_max_return
-            logs["Expert_MinReturn"] = self.expert_min_return
-            logs["Expert_AverageEpLen"] = self.expert_average_eplen
-            logs["Expert_TotalTimesteps"] = self.expert_total_timesteps"""
-
             logs["Train_EnvstepsSoFar"] = self.total_envsteps
             logs["TimeSinceStart"] = time.time() - self.start_time
             last_log = training_logs[-1]  # Only use the last log for now
@@ -283,7 +271,7 @@ class RL_Trainer(object):
 
             if itr == 0:
                 self.initial_return = np.mean(train_returns)
-            logs["Initial_DataCollection_AverageReturn"] = self.initial_return
+            logs["Initial_DataCollection_MeanReturn"] = self.initial_return
 
             # perform the logging
             for key, value in logs.items():
