@@ -50,6 +50,7 @@ class ReplayBuffer(object):
                 self.unconcatenated_rews += unconcatenated_rews  # TODO keep only latest max_size around
             else:
                 self.unconcatenated_rews.append(unconcatenated_rews)  # TODO keep only latest max_size around
+            self.unconcatenated_rews = self.unconcatenated_rews[-self.max_size:]
 
     ########################################
     ########################################
