@@ -28,8 +28,7 @@ class Logger:
 
     def log_paths_as_videos(self, paths, step, max_videos_to_save=2, fps=10, video_title='video'):
 
-        # reshape the rollouts
-        videos = [np.transpose(p['image_obs'], [0, 3, 1, 2]) for p in paths]
+        videos = [p['image_obs'] for p in paths]
 
         # max rollout length
         max_videos_to_save = np.min([max_videos_to_save, len(videos)])
@@ -44,9 +43,15 @@ class Logger:
                 padding = np.tile([videos[i][-1]], (max_length-videos[i].shape[0],1,1,1))
                 videos[i] = np.concatenate([videos[i], padding], 0)
 
-        # log videos to tensorboard event file
-        videos = np.stack(videos[:max_videos_to_save], 0)
-        self.log_video(videos, video_title, step, fps=fps)
+            clip = mpy.ImageSequenceClip(list(videos[i]), fps=fps)
+            txt_clip = (mpy.TextClip(video_title,fontsize=30,color='white')
+                                   .set_position('top', 'center')
+                                   .set_duration(10))
+            
+            video = mpy.CompositeVideoClip([clip, txt_clip])
+            new_video_title = video_title+'_{}'.format(i) + '.mp4'
+            filename = os.path.join(self._log_dir, new_video_title)
+            video.write_videofile(filename, fps =fps)
 
     def log_figures(self, figure, name, step, phase):
         """figure: matplotlib.pyplot figure handle"""
