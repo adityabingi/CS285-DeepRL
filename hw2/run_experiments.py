@@ -1,4 +1,5 @@
 import os
+import random
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -69,7 +70,7 @@ def run_exp4_1():
 
     cmd = "python cs285/scripts/run_hw2.py --env_name HalfCheetah-v2 --ep_len 150 \
            --discount 0.95 -n 100 -l 2 -s 32 -b {b} -lr {lr} -rtg --nn_baseline \
-           --exp_name {exp} --eval_batch_size 5000"
+           --exp_name {exp} --eval_batch_size 1500"
 
     batch_sizes = [10000, 30000, 50000]
     lr_rates = [0.005, 0.01, 0.02]
@@ -83,14 +84,15 @@ def run_exp4_2(batch_size, learning_rate):
 
     cmd = "python cs285/scripts/run_hw2.py --env_name HalfCheetah-v2 --ep_len 150 \
           --discount 0.95 -n 100 -l 2 -s 32 -b {b} -lr {lr} \
-          --exp_name {exp} --seed {seed} --eval_batch_size 5000"
+          --exp_name {exp} --seed {seed} --eval_batch_size 1500"
 
-    cmdline_args = ['',' -rtg', ' --nn_baseline' ' -rtg --nn_baseline']
+    cmdline_args = ['',' -rtg', ' --nn_baseline', ' -rtg --nn_baseline']
     exp_names = ['', '_rtg', '_nnbaseline', '_rtg_nnbaseline']
 
     for i, exp_name in enumerate(exp_names):
         for seed in SEEDS:
             new_cmd = cmd + cmdline_args[i]
+            print(new_cmd)
             new_cmd = new_cmd.format(exp = f'q4_b{batch_size}_r{learning_rate}' + exp_name + '_seed' +str(seed), 
                                      b = batch_size, lr = learning_rate, seed=seed)
             os.system(new_cmd)
@@ -116,30 +118,31 @@ exp1_2 = {
 
 }
 
+# Rando
 exp2 ={
 
 "exp_name": 'InvertedPendulum-v2_q2_b',
-"plot_title": 'InvertedPendulum-v2 pg agent',
-"plot_labels": [''],
+"plot_title": 'InvertedPendulum-v2 pg agent for single seed with batch-size {b} and learning-rate {lr}',
+"plot_labels": ['rtg & std_adv'],
 "num_iter": 100,
-"seeds":SEEDS
+"seeds":[1]
 
 }
 
 exp3 ={
 
 "exp_name": 'LunarLanderContinuous-v2_q3_b',
-"plot_title": 'LunarLanderContinuous-v2 pg agent',
+"plot_title": 'LunarLanderContinuous-v2 pg agent trained with rtg nn_baseline and standardized-advantages',
 "plot_labels": ['rtg & nn_baseline'],
 "num_iter": 100,
 "seeds":SEEDS
 
-}
+} 
 
 exp4_1 ={
 
 "exp_name": 'HalfCheetah-v2_q4_search',
-"plot_title": 'HalfCheetah-v2 pg agent',
+"plot_title": 'HalfCheetah-v2 pg agent trained with rtg nn_baseline and standardized-advantages for single seed',
 "plot_labels": ['bs=10000-lr=0.005', 'bs=10000-lr=0.01', 'bs=10000-lr=0.02',
                 'bs=30000-lr=0.005', 'bs=30000-lr=0.01', 'bs=30000-lr=0.02',
                 'bs=50000-lr=0.005', 'bs=50000-lr=0.01', 'bs=50000-lr=0.02'],
@@ -151,15 +154,15 @@ exp4_1 ={
 exp4_2 ={
 
 "exp_name": 'HalfCheetah-v2_q4_b',
-"plot_title": 'HalfCheetah-v2 pg agent',
-"plot_labels": ['pg with std_adv', 'rtg', 'nn_baseline', 'rtg & nn_baseline'],
+"plot_title": 'HalfCheetah-v2 pg agent trained with batch-size {b} and learning-rate {lr} & standardized-advantages',
+"plot_labels": ['vanilla pg', 'rtg', 'nn_baseline', 'rtg & nn_baseline'],
 "num_iter": 100,
 "seeds": SEEDS
 
 }
 
 
-def make_plot(plot_args):
+def make_plot(plot_args, cmd_line_args):
 
     """
     Utility function for plotting mean_rewards against number of training iterations
@@ -168,6 +171,10 @@ def make_plot(plot_args):
     exp_name = plot_args['exp_name']
     plot_labels = plot_args['plot_labels']
     plot_title = plot_args['plot_title']
+
+    if cmd_line_args.exp =='2' or cmd_line_args.exp == '4_2':
+        plot_title = plot_title.format(b=cmd_line_args.batch_size, lr=cmd_line_args.learning_rate)
+
     n_iter = plot_args['num_iter']
     seeds  = plot_args['seeds']
 
@@ -270,32 +277,32 @@ def main():
         if args.run:
             run_exp1_1()
         if args.plot:
-            make_plot(exp1_1)
+            make_plot(exp1_1, args)
     elif args.exp == '1_2':
         if args.run:
             run_exp1_2()
         if args.plot:
-            make_plot(exp1_2)
+            make_plot(exp1_2, args)
     elif args.exp == '2':
         if args.run:
             run_exp2(args.batch_size, args.learning_rate)
         if args.plot:
-            make_plot(exp2)
+            make_plot(exp2, args)
     elif args.exp == '3':
         if args.run:
             run_exp3()
         if args.plot:
-            make_plot(exp3)
+            make_plot(exp3, args)
     elif args.exp == '4_1':
         if args.run:
             run_exp4_1()
         if args.plot:
-            make_plot(exp4_1)
+            make_plot(exp4_1, args)
     else:
         if args.run:
             run_exp4_2(args.batch_size, args.learning_rate)
         if args.plot:
-            make_plot(exp4_2)
+            make_plot(exp4_2, args)
 
 if __name__ == '__main__':
     main()
