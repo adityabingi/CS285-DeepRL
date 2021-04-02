@@ -149,7 +149,7 @@ class RL_Trainer(object):
             # decide if metrics should be logged
             if self.params['scalar_log_freq'] == -1:
                 self.logmetrics = False
-            elif itr % self.params['scalar_log_freq'] == 0:
+            elif itr == 0 or (itr+1) % self.params['scalar_log_freq'] == 0:
                 self.logmetrics = True
             else:
                 self.logmetrics = False
@@ -253,6 +253,7 @@ class RL_Trainer(object):
         episode_rewards = get_wrapper_by_name(self.env, "Monitor").get_episode_rewards()
         if len(episode_rewards) > 0:
             self.mean_episode_reward = np.mean(episode_rewards[-100:])
+            self.episode_reward_std  = np.std(episode_rewards[-100:])
         if len(episode_rewards) > 100:
             self.best_mean_episode_reward = max(self.best_mean_episode_reward, self.mean_episode_reward)
 
@@ -262,6 +263,7 @@ class RL_Trainer(object):
         print("Timestep %d" % (self.agent.t,))
         if self.mean_episode_reward > -5000:
             logs["Train_AverageReturn"] = np.mean(self.mean_episode_reward)
+            logs["Train_StdReturn"]     = self.episode_reward_std
         print("mean reward (100 episodes) %f" % self.mean_episode_reward)
         if self.best_mean_episode_reward > -5000:
             logs["Train_BestReturn"] = np.mean(self.best_mean_episode_reward)

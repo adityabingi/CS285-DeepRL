@@ -22,10 +22,14 @@ class Q_Trainer(object):
 
         self.agent_params = {**train_args, **env_args, **params}
 
+        if self.agent_params['hp_search_key']:
+            self.agent_params[self.agent_params['hp_search_key']] = int(self.agent_params['hp_search_value'])
+
         self.params['agent_class'] = DQNAgent
         self.params['agent_params'] = self.agent_params
         self.params['train_batch_size'] = params['batch_size']
         self.params['env_wrappers'] = self.agent_params['env_wrappers']
+
 
         self.rl_trainer = RL_Trainer(self.params)
 
@@ -63,6 +67,8 @@ def main():
     parser.add_argument('--video_log_freq', type=int, default=-1)
 
     parser.add_argument('--save_params', action='store_true')
+    parser.add_argument('--hp_search_key', '-hp_k' ,type=str)
+    parser.add_argument('--hp_search_value', '-hp_v', default=1000)
 
     args = parser.parse_args()
 
@@ -73,12 +79,12 @@ def main():
     ### CREATE DIRECTORY FOR LOGGING
     ##################################
 
-    data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../data')
+    data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../data')
 
     if not (os.path.exists(data_path)):
         os.makedirs(data_path)
 
-    logdir = 'hw3_' + args.exp_name + '_' + args.env_name + '_' + time.strftime("%d-%m-%Y_%H-%M-%S")
+    logdir = args.env_name + '_' + args.exp_name + '_' + time.strftime("%d-%m-%Y-%H-%M-%S")
     logdir = os.path.join(data_path, logdir)
     params['logdir'] = logdir
     if not(os.path.exists(logdir)):
