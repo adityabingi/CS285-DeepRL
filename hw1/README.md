@@ -7,6 +7,36 @@ You can run this code on your own machine or on Google Colab.
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/berkeleydeeprlcourse/homework_fall2020/blob/master/hw1/cs285/scripts/run_hw1.ipynb)
 
+## Assignment1 Imitation Learning Results
+
+### Part1 Behavioral Cloning
+
+
+Behavioral Cloning agent on Ant-v2 task achieves atleast 30% or more of expert performance with default hyperparameters
+wheras bc agent on Humanoid-v2 achieves less than 30%
+
+|| Ant-v2 | Humanoid-v2 |
+|---| --- | ---|
+|Expert-Agent| <table>  <thead>   <th>Average Return</th>  <th>Std Return </th>  </thead>  <tbody>  <tr>  <td>4713</td>  <td> --</td>  </tr>   </tbody>  </table>| <table>  <thead>   <th>Average Return</th>  <th>Std Return </th>  </thead>  <tbody>  <tr>  <td>10345</td>  <td> --</td>  </tr>   </tbody>  </table>|
+|BC-Agent| <table>  <thead>   <th>Average Return</th>  <th>Std Return </th>  </thead>  <tbody>  <tr>  <td>1500</td>  <td> 800</td>  </tr>   </tbody>  </table> | <table>  <thead>   <th>Average Return</th>  <th>Std Return </th>  </thead>  <tbody>  <tr>  <td>250</td>  <td>40</td>  </tr>   </tbody>  </table> |
+
+#### Experimentation with hyperparameters
+
+As learning rate typically affects learning in neural networks this hyperparameter is chosen for analysis
+
+![bc-lr-rate](plot_results/bc_lr_rate.jpg)
+Also, number of training steps performed on collected expert data seems to effect performance for Ant-v2 task
+![bc_train_steps_per_iter](plot_results/bc_train_steps_per_iter.jpg)
+
+### Part2 Dagger
+
+Dagger Agent performance comparision with respect to expert agent and behavioral cloning agent for two tasks used in part1
+
+
+![Dagger-Ant-v2](plot_results/dagger.jpg) 
+
+
+
 ## Complete the code
 
 Fill in sections marked with `TODO`. In particular, see
