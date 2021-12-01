@@ -27,6 +27,10 @@ class MB_Trainer(object):
         controller_args = {
             'mpc_horizon': params['mpc_horizon'],
             'mpc_num_action_sequences': params['mpc_num_action_sequences'],
+            'mpc_action_sampling_strategy': params['mpc_action_sampling_strategy'],
+            'cem_iterations': params['cem_iterations'],
+            'cem_num_elites': params['cem_num_elites'],
+            'cem_alpha': params['cem_alpha'],
         }
 
         agent_params = {**computation_graph_args, **train_args, **controller_args}
@@ -62,6 +66,10 @@ def main():
     parser.add_argument('--ensemble_size', '-e', type=int, default=3)
     parser.add_argument('--mpc_horizon', type=int, default=10)
     parser.add_argument('--mpc_num_action_sequences', type=int, default=1000)
+    parser.add_argument('--mpc_action_sampling_strategy', type=str, default='random')
+    parser.add_argument('--cem_iterations', type=int, default=4)
+    parser.add_argument('--cem_num_elites', type=int, default=5)
+    parser.add_argument('--cem_alpha', type=float, default=1)
 
     parser.add_argument('--add_sl_noise', '-noise', action='store_true')
     parser.add_argument('--num_agent_train_steps_per_iter', type=int, default=1000)
@@ -97,14 +105,14 @@ def main():
     ### CREATE DIRECTORY FOR LOGGING
     ##################################
 
-    #logdir_prefix = 'hw4_'  # keep for autograder
+    logdir_prefix = 'hw4_'  # keep for autograder
 
     data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../data')
 
     if not (os.path.exists(data_path)):
         os.makedirs(data_path)
 
-    logdir = args.env_name + '_' +  args.exp_name + '_'  + time.strftime("%d-%m-%Y-%H-%M-%S")
+    logdir = logdir_prefix + args.exp_name + '_' + args.env_name + '_' + time.strftime("%d-%m-%Y_%H-%M-%S")
     logdir = os.path.join(data_path, logdir)
     params['logdir'] = logdir
     if not(os.path.exists(logdir)):

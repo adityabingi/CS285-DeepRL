@@ -30,6 +30,10 @@ class MBAgent(BaseAgent):
             dyn_models=self.dyn_models,
             horizon=self.agent_params['mpc_horizon'],
             N=self.agent_params['mpc_num_action_sequences'],
+            sample_strategy=self.agent_params['mpc_action_sampling_strategy'],
+            cem_iterations=self.agent_params['cem_iterations'],
+            cem_num_elites=self.agent_params['cem_num_elites'],
+            cem_alpha=self.agent_params['cem_alpha'],
         )
 
         self.replay_buffer = ReplayBuffer()
