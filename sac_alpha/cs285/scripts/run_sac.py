@@ -76,6 +76,8 @@ def main():
     parser.add_argument('--discount', type=float, default=0.99)
     parser.add_argument('--polyak_tau', type=float, default=0.995)
     parser.add_argument('--update_target_freq', type=int, default=1)
+    parser.add_argument('--l2_reg', type=float, default=1e-3,
+                                           help='l2 regression coefficient for critic network')
 
     parser.add_argument('--num_agent_train_steps_per_iter', type=int, default=1)
     parser.add_argument('--num_target_updates', '-ntu', type=int, default=1)
