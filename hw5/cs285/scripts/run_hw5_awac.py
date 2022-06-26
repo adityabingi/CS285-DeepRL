@@ -1,8 +1,8 @@
 import os
 import time
 
-from cs285.infrastructure.rl_trainer import RL_Trainer
-from cs285.agents.explore_or_exploit_agent import ExplorationOrExploitationAgent
+from cs285.infrastructure.rl_trainer_awac import RL_Trainer
+from cs285.agents.awac_agent import AWACAgent
 from cs285.infrastructure.dqn_utils import get_env_kwargs, PiecewiseSchedule, ConstantSchedule
 
 
@@ -23,7 +23,7 @@ class Q_Trainer(object):
 
         self.agent_params = {**train_args, **env_args, **params}
 
-        self.params['agent_class'] = ExplorationOrExploitationAgent
+        self.params['agent_class'] = AWACAgent
         self.params['agent_params'] = self.agent_params
         self.params['train_batch_size'] = params['batch_size']
         self.params['env_wrappers'] = self.agent_params['env_wrappers']
@@ -71,6 +71,12 @@ def main():
     parser.add_argument('--which_gpu', '-gpu_id', default=0)
     parser.add_argument('--scalar_log_freq', type=int, default=int(1e3))
     parser.add_argument('--save_params', action='store_true')
+
+    parser.add_argument('--awac_lambda', type=float, default=1)
+    parser.add_argument('--n_layers', type=int, default=4)
+    parser.add_argument('--size', type=int, default=512)
+    parser.add_argument('--learning_rate', type=int, default=1e-4)
+    parser.add_argument('--n_actions', type=int, default=10)
 
     parser.add_argument('--use_boltzmann', action='store_true')
 

@@ -86,8 +86,14 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
 
     # query the policy with observation(s) to get selected action(s)
     def get_action(self, obs: np.ndarray) -> np.ndarray:
-        raise NotImplementedError
-        # TODO: get this from hw1
+        if len(obs.shape) > 1:
+            observation = obs
+        else:
+            observation = obs[None]
+        observation = ptu.from_numpy(observation)
+        action_distribution = self(observation)
+        action = action_distribution.sample()  # don't bother with rsample
+        return ptu.to_numpy(action)
 
     ####################################
     ####################################
@@ -102,8 +108,20 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     # return more flexible objects, such as a
     # `torch.distributions.Distribution` object. It's up to you!
     def forward(self, observation: torch.FloatTensor):
-        raise NotImplementedError
-        # TODO: get this from hw1
+        if self.discrete:
+            logits = self.logits_na(observation)
+            action_distribution = distributions.Categorical(logits=logits)
+            return action_distribution
+        else:
+            batch_mean = self.mean_net(observation)
+            scale_tril = torch.diag(torch.exp(self.logstd))
+            batch_dim = batch_mean.shape[0]
+            batch_scale_tril = scale_tril.repeat(batch_dim, 1, 1)
+            action_distribution = distributions.MultivariateNormal(
+                batch_mean,
+                scale_tril=batch_scale_tril,
+            )
+            return action_distribution
 
     ####################################
     ####################################
@@ -124,3 +142,40 @@ class MLPPolicyAC(MLPPolicy):
 
     ####################################
     ####################################
+
+class MLPPolicyAWAC(MLPPolicy):
+    def __init__(self,
+                 ac_dim,
+                 ob_dim,
+                 n_layers,
+                 size,
+                 discrete=False,
+                 learning_rate=1e-4,
+                 training=True,
+                 nn_baseline=False,
+                 lambda_awac=10,
+                 **kwargs,
+                 ):
+        self.lambda_awac = lambda_awac
+        super().__init__(ac_dim, ob_dim, n_layers, size, discrete, learning_rate, training, nn_baseline, **kwargs)
+    
+    def update(self, observations, actions, adv_n=None):
+        if adv_n is None:
+            assert False
+        if isinstance(observations, np.ndarray):
+            observations = ptu.from_numpy(observations)
+        if isinstance(actions, np.ndarray):
+            actions = ptu.from_numpy(actions)
+        if isinstance(adv_n, np.ndarray):
+            adv_n = ptu.from_numpy(adv_n)
+
+        # TODO update the policy network utilizing AWAC update
+
+        log_probs = self(observations).log_prob(actions)
+        actor_loss = -(log_probs * torch.exp((1/ self.lambda_awac) *adv_n)).mean()
+
+        self.optimizer.zero_grad()
+        actor_loss.backward()
+        self.optimizer.step()
+        
+        return actor_loss.item()

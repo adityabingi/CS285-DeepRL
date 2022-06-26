@@ -419,6 +419,10 @@ class Pointmass(gym.Env):
 
   def step(self, action):
     self.timesteps_left -= 1
+
+    if isinstance(action, np.ndarray):
+      action = action.item()
+
     action = np.array(ACT_DICT[action])
     action = np.random.normal(action, self.action_noise)
     self.state = self.simulate_step(self.state, action)

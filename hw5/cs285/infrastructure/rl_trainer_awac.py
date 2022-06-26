@@ -14,7 +14,7 @@ from cs285.infrastructure import pytorch_util as ptu
 from cs285.infrastructure import utils
 from cs285.infrastructure.logger import Logger
 
-from cs285.agents.explore_or_exploit_agent import ExplorationOrExploitationAgent
+from cs285.agents.awac_agent import AWACAgent
 from cs285.infrastructure.dqn_utils import (
         get_wrapper_by_name,
         register_custom_envs,
@@ -134,7 +134,7 @@ class RL_Trainer(object):
         self.total_envsteps = 0
         self.start_time = time.time()
 
-        print_period = 1000 if isinstance(self.agent, ExplorationOrExploitationAgent) else 1
+        print_period = 1000 if isinstance(self.agent, AWACAgent) else 1
 
         for itr in range(n_iter):
             if itr % print_period == 0:
@@ -155,7 +155,7 @@ class RL_Trainer(object):
                 self.logmetrics = False
 
             # collect trajectories, to be used for training
-            if isinstance(self.agent, ExplorationOrExploitationAgent):
+            if isinstance(self.agent, AWACAgent):
                 self.agent.step_env()
                 envsteps_this_batch = 1
                 train_video_paths = None
@@ -178,7 +178,7 @@ class RL_Trainer(object):
                 paths = self.do_relabel_with_expert(expert_policy, paths)
 
             # add collected data to replay buffer
-            if isinstance(self.agent, ExplorationOrExploitationAgent):
+            if isinstance(self.agent, AWACAgent):
                 if (not self.agent.offline_exploitation) or (self.agent.t <= self.agent.num_exploration_steps):
                     self.agent.add_to_replay_buffer(paths)
 
@@ -188,14 +188,14 @@ class RL_Trainer(object):
             all_logs = self.train_agent()
 
             # Log densities and output trajectories
-            if isinstance(self.agent, ExplorationOrExploitationAgent) and (itr % print_period == 0):
+            if isinstance(self.agent, AWACAgent) and (itr % print_period == 0):
                 self.dump_density_graphs(itr)
 
             # log/save
             if self.logvideo or self.logmetrics:
                 # perform logging
                 print('\nBeginning logging procedure...')
-                if isinstance(self.agent, ExplorationOrExploitationAgent):
+                if isinstance(self.agent, AWACAgent):
                     self.perform_dqn_logging(all_logs)
                 else:
                     self.perform_logging(itr, paths, eval_policy, train_video_paths, all_logs)
