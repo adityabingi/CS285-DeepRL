@@ -124,7 +124,8 @@ class TD3Agent(BaseAgent):
                             ).clamp(-self.noise_clip, self.noise_clip)
 
                 next_actions = (self.actor_target.get_action_batch(next_ob_no)+noise
-                               ).clamp(torch.FloatTensor(self.action_low), torch.FloatTensor(self.action_high))
+                               ).clamp(torch.FloatTensor(self.action_low).to(ptu.device), 
+                                       torch.FloatTensor(self.action_high).to(ptu.device))
                 q1_targets = self.q1_target(next_ob_no, next_actions)
                 q2_targets = self.q2_target(next_ob_no, next_actions)
 
