@@ -213,9 +213,9 @@ class TRPOPolicy(MLPPolicy):
 
            http://www.cs.cmu.edu/~pradeepr/convexopt/Lecture_Slides/conjugate_direction_methods.pdf
         """
-        x_k = torch.zeros(b.size())
-        d_k = b.clone()
-        g_k = b.clone()
+        x_k = torch.zeros(b.size()).to(ptu.device)
+        d_k = b.clone().to(ptu.device)
+        g_k = b.clone().to(ptu.device)
         g_dot_g = torch.dot(g_k, g_k)
 
 
