@@ -72,15 +72,15 @@ def main():
     parser.add_argument('--use_gae', action='store_true')
     parser.add_argument('--gae_lam', type=float, default=0.95)
     parser.add_argument('--dont_standardize_advantages', '-dsa', action='store_true')
-    parser.add_argument('--batch_size', '-b', type=int, default=1000) #steps collected per train iteration
-    parser.add_argument('--eval_batch_size', '-eb', type=int, default=400) #steps collected per eval iteration
+    parser.add_argument('--batch_size', '-b', type=int, default=2048) #steps collected per train iteration
+    parser.add_argument('--eval_batch_size', '-eb', type=int, default=5000) #steps collected per eval iteration
     parser.add_argument('--ppo_min_batch_size', type=int, default=64)
 
     parser.add_argument('--num_agent_train_steps_per_iter', type=int, default=1)
     parser.add_argument('--num_target_updates', '-ntu', type=int, default=1)
     parser.add_argument('--discount', type=float, default=1.0)
-    parser.add_argument('--learning_rate_valuefn', '-lr_v', type=float, default=5e-3)
-    parser.add_argument('--learning_rate_policyfn', '-lr_p', type=float, default=5e-3)
+    parser.add_argument('--learning_rate_valuefn', '-lr_v', type=float, default=3e-4)
+    parser.add_argument('--learning_rate_policyfn', '-lr_p', type=float, default=3e-4)
     parser.add_argument('--n_layers', '-l', type=int, default=2)
     parser.add_argument('--size', '-s', type=int, default=64)
 
